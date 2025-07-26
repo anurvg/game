@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Basic FPS</title>
+<style>
+  body { margin: 0; overflow: hidden; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/controls/PointerLockControls.js"></script>
+
+<script>
+let scene, camera, renderer, controls;
+let bullets = [];
+
+init();
+animate();
+
+function init() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x000000);
+
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // Light
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(1,1,1);
+  scene.add(light);
+
+  // Floor
+  const floorGeo = new THREE.PlaneGeometry(200, 200);
+  const floorMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI/2;
+  scene.add(floor);
+
+  // A cube target
+  const cubeGeo = new THREE.BoxGeometry(2,2,2);
+  const cubeMat = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+  const cube = new THREE.Mesh(cubeGeo, cubeMat);
+  cube.position.set(0,1,-20);
+  scene.add(cube);
+
+  // Controls
+  controls = new THREE.PointerLockControls(camera, document.body);
+  document.body.addEventListener('click', () => controls.lock());
+  
+  const velocity = new THREE.Vector3();
+  const keys = {};
+  
+  document.addEventListener('keydown', e => keys[e.code] = true);
+  document.addEventListener('keyup', e => keys[e.code] = false);
+
+  function move() {
+    const speed = 0.1;
+    if(keys['KeyW']) velocity.z = -speed;
+    if(keys['KeyS']) velocity.z = speed;
+    if(keys['KeyA']) velocity.x = -speed;
+    if(keys['KeyD']) velocity.x = speed;
+
+    controls.moveRight(velocity.x);
+    controls.moveForward(velocity.z);
+
+    velocity.x *= 0.8;
+    velocity.z *= 0.8;
+  }
+
+  document.addEventListener('click', shoot);
+
+  function shoot() {
+    const bullet = new THREE.Mesh(
+      new THREE.SphereGeometry(0.1, 8, 8),
+      new THREE.MeshBasicMaterial({ color: 0xffff00 })
+    );
+    bullet.position.copy(camera.position);
+    bullet.velocity = new THREE.Vector3();
+    bullet.velocity.setFromMatrixColumn(camera.matrix, 0);
+    bullet.velocity.crossVectors(camera.up, bullet.velocity).normalize();
+    bullet.velocity = new THREE.Vector3(
+      -Math.sin(camera.rotation.y),
+      0,
+      -Math.cos(camera.rotation.y)
+    ).multiplyScalar(0.5);
+    bullets.push(bullet);
+    scene.add(bullet);
+  }
+
+  function animateBullets() {
+    for(let i=0; i<bullets.length; i++) {
+      bullets[i].position.add(bullets[i].velocity);
+    }
+  }
+
+  function loop() {
+    move();
+    animateBullets();
+    renderer.render(scene, camera);
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+}
+
+function animate() {
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
