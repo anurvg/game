@@ -1,186 +1,178 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>YEAR PRODUCTION MACHINE</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Year Prediction Machine</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #111;
-      color: white;
-      font-family: 'Inter', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      overflow: hidden;
-    }
+    :root {
+      --bg-color: #f5f5f5;
+      --primary-color: #1e1e1e;
+      --accent-color: #0055ff;
+      --error-color: #e63946;
+    }* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
 
-    h1 {
-      font-family: 'Poppins', sans-serif;
-      font-size: 2rem;
-      margin-bottom: 30px;
-    }
+body {
+  background-color: var(--bg-color);
+  color: var(--primary-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 20px;
+}
 
-    input {
-      padding: 12px;
-      font-size: 18px;
-      border: none;
-      border-radius: 6px;
-      width: 160px;
-      text-align: center;
-      outline: none;
-    }
+h1 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  font-weight: 700;
+}
 
-    button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      background: white;
-      color: black;
-      border: none;
-      border-radius: 6px;
-      transition: background 0.3s;
-    }
+.container {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
 
-    button:hover {
-      background: #ccc;
-    }
+input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+}
 
-    #result {
-      margin-top: 30px;
-      font-size: 22px;
-      font-weight: bold;
-      opacity: 0;
-      transition: opacity 0.6s ease, transform 0.6s ease;
-      transform: translateY(10px);
-    }
+button {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  background-color: var(--accent-color);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
 
-    .fade-in {
-      opacity: 1 !important;
-      transform: translateY(0px) !important;
-    }
+button:hover {
+  background-color: #003fbb;
+}
 
-    #buffer {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 30px;
-    }
+.buffer {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #666;
+}
 
-    .spinner {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #3498db;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin-bottom: 15px;
-    }
+.spinner {
+  margin: 10px auto;
+  width: 30px;
+  height: 30px;
+  border: 4px solid #ccc;
+  border-top: 4px solid var(--accent-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
-    #bufferText {
-      font-size: 16px;
-      color: #bbb;
-    }
+.result {
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
 
-    #error {
-      position: absolute;
-      top: 20px;
-      background-color: #ff0000cc;
-      padding: 12px 20px;
-      border-radius: 6px;
-      border: 2px solid white;
-      font-weight: bold;
-      display: none;
-      font-size: 18px;
-    }
+.result.visible {
+  opacity: 1;
+}
 
-    @media screen and (max-width: 500px) {
-      input {
-        width: 140px;
-      }
-    }
+.error {
+  margin-top: 10px;
+  color: var(--error-color);
+  font-weight: bold;
+}
+
   </style>
 </head>
-<body>
+<body>  <h1>YEAR PRODUCTION MACHINE</h1>
+  <div class="container">
+    <input type="text" id="yearInput" placeholder="Enter a year (e.g. 2023)" maxlength="10" />
+    <button onclick="startPrediction()">Predict</button><div class="buffer" id="buffer" style="display:none">
+  <div class="spinner"></div>
+  <p id="bufferText">Scanning...</p>
+</div>
 
-  <h1>YEAR PRODUCTION MACHINE</h1>
-  <input type="number" id="yearInput" placeholder="Enter year" />
-  <button onclick="predictYear()">Predict</button>
+<div class="result" id="result"></div>
+<div class="error" id="error" style="display:none">Thik se dal Chutiye</div>
 
-  <div id="buffer">
-    <div class="spinner"></div>
-    <div id="bufferText">Checking by AI</div>
-  </div>
-
-  <div id="result"></div>
-  <div id="error">Thik se dal Chutiye</div>
-
-  <!-- Sound Effects -->
-  <audio id="clickSound" src="assets/cl.mp3"></audio>
-  <audio id="scanSound" src="assets/sc.mp3"></audio>
-  <audio id="errorSound" src="assets/e.mp3"></audio>
-  <audio id="confirmSound" src="assets/cm.mp3"></audio>
+  </div><audio id="clickSound" src="assets/cl.mp3"></audio> <audio id="scanSound" src="assets/sc.mp3"></audio> <audio id="errorSound" src="assets/e.mp3"></audio> <audio id="confirmSound" src="assets/cm.mp3"></audio>
 
   <script>
-    const buffer = document.getElementById("buffer");
-    const bufferText = document.getElementById("bufferText");
-    const result = document.getElementById("result");
-    const error = document.getElementById("error");
+    const resultBox = document.getElementById('result');
+    const buffer = document.getElementById('buffer');
+    const bufferText = document.getElementById('bufferText');
+    const errorBox = document.getElementById('error');
 
-    const clickSound = document.getElementById("clickSound");
-    const scanSound = document.getElementById("scanSound");
-    const errorSound = document.getElementById("errorSound");
-    const confirmSound = document.getElementById("confirmSound");
+    const clickSound = document.getElementById('clickSound');
+    const scanSound = document.getElementById('scanSound');
+    const errorSound = document.getElementById('errorSound');
+    const confirmSound = document.getElementById('confirmSound');
 
-    const messages = ["Checking by AI", "Analyzing timeline", "Predicting optimal result"];
+    const bufferMessages = ["Checking by AI", "Analyzing Timeline", "Almost Done..."];
 
-    function predictYear() {
-      const year = document.getElementById("yearInput").value.trim();
-      result.classList.remove("fade-in");
-      result.innerText = "";
-      error.style.display = "none";
+    function startPrediction() {
+      const input = document.getElementById('yearInput').value.trim();
+      resultBox.classList.remove('visible');
+      resultBox.textContent = "";
+      errorBox.style.display = "none";
 
-      clickSound.play();
-
-      if (year.length < 4 || isNaN(year)) {
-        error.style.display = "block";
+      if (input.length < 4 || isNaN(input)) {
+        errorBox.style.display = "block";
         errorSound.play();
-        setTimeout(() => {
-          error.style.display = "none";
-        }, 2000);
         return;
       }
 
-      let i = 0;
-      buffer.style.display = "flex";
-      scanSound.currentTime = 0;
+      clickSound.play();
+      buffer.style.display = 'block';
       scanSound.play();
 
+      let step = 0;
+      bufferText.textContent = bufferMessages[step];
+
       const interval = setInterval(() => {
-        bufferText.innerText = messages[i];
-        i++;
-        if (i >= messages.length) {
+        step++;
+        if (step < bufferMessages.length) {
+          bufferText.textContent = bufferMessages[step];
+        } else {
           clearInterval(interval);
+          scanSound.pause();
+          scanSound.currentTime = 0;
+
           setTimeout(() => {
-            buffer.style.display = "none";
-            result.innerText = `The predicted year is: ${parseInt(year) + 1}`;
-            result.classList.add("fade-in");
+            buffer.style.display = 'none';
+            resultBox.textContent = `Predicted Year: ${parseInt(input) + 1}`;
+            resultBox.classList.add('visible');
             confirmSound.play();
-          }, 500);
+          }, 200);
         }
       }, 1000);
     }
-  </script>
-</body>
+  </script></body>
 </html>
